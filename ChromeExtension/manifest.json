@@ -1,26 +1,33 @@
 {
   "manifest_version": 3,
   "name": "Fake News Detection",
+  "key": "fajdklfajlfkajreirueoiureoirueou",
   "version": "1.0.0",
   "description": "A Basic Application to track false informations",
   "icons": {
-    "48": "images/icon-48.png",
-    "128": "images/icon-128.png"
-  },
+      "16": "images/icon16.png",
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
+    },
   "background": {
     "service_worker": "service-worker.js"
   },
   "action": {
-    "default_icon": {
-      "48": "images/icon-48.png",
-    "128": "images/icon-128.png"
+    "icons": {
+      "16": "images/icon16.png",
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
     },
-    "default_title":"Awesome Fake Detector",
-    "default_popup":"popup.html"
+    "default_title": "Awesome Fake Detector",
+    "default_popup": "popup.html"
   },
   "permissions": [
     "scripting",
-    "activeTab"
+    "activeTab",
+    "storage",
+    "clipboardRead",
+    "clipboardWrite",
+    "contextMenus"
   ],
   "side_panel": {
     "default_path": "index.html"
@@ -28,10 +35,12 @@
   "content_scripts": [
     {
       "js": [
-        "content-script.js"
+        "static/js/main.2a2bebe6.js",
+        "loader.js"
       ],
       "matches": [
-        "http://*.example.com//"
+        "http://*/*",
+        "https://*/*"
       ]
     }
   ]
