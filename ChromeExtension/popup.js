@@ -47,13 +47,13 @@ class HTTP {
 }
 document.addEventListener('DOMContentLoaded', function () {
   const newsTextArea = document.getElementById('news-text');
+  const feedbacktextarea = document.getElementById('news-text-fedback');
   const submitButton = document.getElementById('submit-button');
   const predictionResult = document.getElementById('prediction-result');
   const feedbackBtn = document.getElementById('feedback-btn');
   const feedbackSection = document.getElementById('feedback-section');
-  const autoPasteButton = document.getElementById('auto-paste');
   const toggleContainer = document.querySelector('.toggle-container');
-  const toggleSwitch = document.querySelector('.toggle-switch');
+  // const toggleSwitch = document.querySelector('.toggle-switch');
   const title = document.getElementById('title');
   const newsTextLabel = document.getElementById('news-text-label');
   const feedbackHeader = document.getElementById('feedback-header');
@@ -61,43 +61,67 @@ document.addEventListener('DOMContentLoaded', function () {
   const feedbackForm = document.getElementById('feedback-form');
   const socialShareDiv = document.getElementById('social-share');
   const shareFacebookButton = document.getElementById('share-facebook');
+  const shareMore = document.getElementById('share-more');
   const shareTwitterButton = document.getElementById('share-twitter');
   const shareWhatsAppButton = document.getElementById('share-whatsapp');
-
   let currentLanguage = 'en';
   // Fake news prediction function
+  predictionResult.firstElementChild.style.display = "none"
+  predictionResult.style.display = "none"
   function predictNews(content) {
-    if (content.includes('breaking news')) {
-      return currentLanguage === 'en' ? 'This news might be fake!' : 'यो समाचार शायद झुटो हो!';
-    } else {
-      return currentLanguage === 'en' ? 'This news looks not fake.' : 'यो समाचार सही देखिन्छ।';
+    if (window.chrome) {
+      predictionResult.style.display = "block"
+      predictionResult.firstElementChild.style.display = "block"
+      predictionResult.lastElementChild.style.display = 'none'
+      window.chrome.runtime.sendMessage({ command: 'CheckNewsForthis', clipboard: true, news: content }, (results) => {
+        submitButton.disabled = false
+        newsTextArea.nextElementSibling.innerHTML = ''
+        predictionResult.firstElementChild.style.display = "none"
+        predictionResult.lastElementChild.style.display = 'block'
+        if (results.status) {
+          updateSocialShareButtons(content)
+          predictionResult.lastElementChild.querySelector(".description").innerHTML = results.news.description
+          predictionResult.lastElementChild.querySelector(".date").innerHTML = results.news.date
+          predictionResult.lastElementChild.querySelector(".source").innerHTML = results.news.source.title
+          predictionResult.lastElementChild.querySelector(".source").onclick = () => {
+            window.open(results.news.source.url)
+          }
+          predictionResult.lastElementChild.querySelector(".date").classList.add("remove")
+          predictionResult.lastElementChild.querySelector(".date").onclick = null
+          predictionResult.lastElementChild.querySelector("h3").innerHTML = results.news.title
+          socialShareDiv.style.display = 'block'
+
+        } else {
+          predictionResult.lastElementChild.querySelector(".description").innerHTML = "This is may be added by someone mistakely or intentionally"
+          predictionResult.lastElementChild.querySelector(".date").innerHTML = 'Report'
+          predictionResult.lastElementChild.querySelector(".source").innerHTML = ''
+          predictionResult.lastElementChild.querySelector(".date").classList.add("report")
+          predictionResult.lastElementChild.querySelector(".date").onclick = () => {
+            settings.reportFakeNews()
+          }
+          predictionResult.lastElementChild.querySelector(".source").onclick = null
+          predictionResult.lastElementChild.querySelector("h3").innerHTML = "This is a Fake News"
+        }
+      });
     }
   }
-
   // Update social share buttons
   function updateSocialShareButtons(message) {
-    const currentUrl = encodeURIComponent(window.location.href);
-    const text = encodeURIComponent(message);
-
     shareFacebookButton.onclick = function () {
-      window.open(
-        `https://www.facebook.com/sharer/sharer.php?u=${currentUrl}&quote=${text}`,
-        '_blank'
-      );
+      window.chrome.runtime.sendMessage({ command: "ShareResult", shareto: "facebook", searchfor: message })
     };
-
     shareTwitterButton.onclick = function () {
-      window.open(
-        `https://twitter.com/intent/tweet?text=${text}&url=${currentUrl}`,
-        '_blank'
-      );
+      window.chrome.runtime.sendMessage({ command: "ShareResult", shareto: "twitter", searchfor: message })
+
     };
 
     shareWhatsAppButton.onclick = function () {
-      window.open(`https://wa.me/?text=${text} ${currentUrl}`, '_blank');
+      window.chrome.runtime.sendMessage({ command: "ShareResult", shareto: "whatsapp", searchfor: message })
+    };
+    shareMore.onclick = function () {
+      window.chrome.runtime.sendMessage({ command: "ShareResult", shareto: "more", searchfor: message })
     };
   }
-
   // Update language
   function updateLanguage() {
     title.textContent = currentLanguage === 'en' ? 'Fake News Detection' : 'झुटो समाचार पत्ता लगाउने';
@@ -112,7 +136,6 @@ document.addEventListener('DOMContentLoaded', function () {
           ? 'Close Feedback Mode'
           : 'प्रतिक्रिया मोड बन्द गर्नुहोस्';
     submitButton.textContent = currentLanguage === 'en' ? 'Predict' : 'पूर्वानुमान गर्नुहोस्';
-    autoPasteButton.textContent = currentLanguage === 'en' ? 'Auto Paste' : 'स्वचालित पेस्ट गर्नुहोस्';
     newsTextArea.placeholder =
       currentLanguage === 'en' ? 'Paste or type news content here...' : 'यहाँ समाचारको पाठ टाइप वा पेस्ट गर्नुहोस्...';
 
@@ -122,84 +145,68 @@ document.addEventListener('DOMContentLoaded', function () {
       radioButtons[0].nextElementSibling.textContent = currentLanguage === 'en' ? 'Real News' : 'साँचो समाचार';
       radioButtons[1].nextElementSibling.textContent = currentLanguage === 'en' ? 'Fake News' : 'झुटो समाचार';
     }
+    if (newsTextArea.nextElementSibling.textContent.trim()) {
+      newsTextArea.nextElementSibling.innerHTML = currentLanguage === 'en'
+        ? 'Please enter some news content!'
+        : 'कृपया केही समाचार प्रविष्ट गर्नुहोस्!'
+    }
+    if (feedbacktextarea.nextElementSibling.textContent.trim()) {
+      feedbacktextarea.nextElementSibling.innerHTML = currentLanguage === 'en'
+        ? 'Please enter some content!'
+        : 'कृपया केही सामग्री प्रविष्ट गर्नुहोस्!'
+    }
   }
-
-  // Auto-paste clipboard content
-  autoPasteButton.addEventListener('click', function () {
-    navigator.clipboard
-      .readText()
-      .then((text) => {
-        newsTextArea.value = text;
-      })
-      .catch((err) => {
-        alert(
-          currentLanguage === 'en'
-            ? `Failed to read clipboard contents: ${err}`
-            : `क्लिपबोर्ड सामग्री पढ्न असफल: ${err}`
-        );
-      });
-  });
+  socialShareDiv.style.display = 'none';
   // Predict news when submit button is clicked
   submitButton.addEventListener('click', function () {
     const newsContent = newsTextArea.value.trim();
-    if (newsContent) {
-      const result = predictNews(newsContent);
-      predictionResult.textContent = result;
-      predictionResult.style.display = 'block';
-      socialShareDiv.style.display = 'block';
-      if (getCookie('csrftoken')) {
-        HTTP.POST("http://localhost:8000/report_news", {
-          error: "hi hello",
-          csrfmiddlewaretoken: getCookie('csrftoken'),
-          chromeruntimeid:chrome.runtime.id
-        })
-      } else {
-        HTTP.GET("http://localhost:8000/get_post_authenticateToken").then(res => {
-          const data = JSON.parse(res)
-          setCookie("_csrftoken", data.csrf, 4)
-          setCookie("csrftoken", data.csrf, 4)
-          HTTP.POST("http://localhost:8000/report_news", {
-            error: "hi hello",
-            csrfmiddlewaretoken: data.csrf,
-            chromeruntimeid:chrome.runtime.id
+    if (newsContent.length >= 5) {
+      predictNews(newsContent);
+      newsTextArea.value = ""
+      submitButton.disabled = true
 
-          })
-        })
-        updateSocialShareButtons(result);
-      }
     } else {
-      alert(
-        currentLanguage === 'en'
-          ? 'Please enter some news content!'
-          : 'कृपया केही समाचार प्रविष्ट गर्नुहोस्!'
-      );
+      predictionResult.style.display = 'none';
+      socialShareDiv.style.display = 'none';
+      newsTextArea.nextElementSibling.innerHTML = currentLanguage === 'en'
+        ? 'Please enter some news content!(atleast 5 character)'
+        : 'कृपया केही समाचार प्रविष्ट गर्नुहोस्!'
     }
   });
+  feedbackBtn.onclick = (e) => {
+    e.preventDefault()
+    const feedback = feedbacktextarea.value.trim();
+    if (feedback.length >= 5) {
+      feedbacktextarea.nextElementSibling.innerHTML = ""
+      feedbacktextarea.value = ''
+      // ...
+      feedbacktextarea.disabled=true
+      feedbackBtn.disabled=true 
+      feedbacktextarea.innerHTML='Feedback Sent'
+      if (window.chrome) {
+        window.chrome.runtime.sendMessage({
+          command: "Feedback",
+          feedback
+        }, (response) => {
+        });
+      }
 
-  // Toggle feedback mode
-  feedbackBtn.addEventListener('click', function () {
-    const isFeedbackVisible = feedbackSection.style.display !== 'none';
-    feedbackSection.style.display = isFeedbackVisible ? 'none' : 'block';
-    newsTextLabel.style.display = isFeedbackVisible ? 'block' : 'none';
-    newsTextArea.style.display = isFeedbackVisible ? 'block' : 'none';
-    submitButton.style.display = isFeedbackVisible ? 'block' : 'none';
-    socialShareDiv.style.display = isFeedbackVisible ? 'none' : 'none';
-    predictionResult.style.display = isFeedbackVisible ? 'none' : 'none';
-    feedbackBtn.textContent = isFeedbackVisible
-      ? currentLanguage === 'en'
-        ? 'Switch to Feedback Mode'
-        : 'प्रतिक्रिया मोडमा जानुहोस्'
-      : currentLanguage === 'en'
-        ? 'Close Feedback Mode'
-        : 'प्रतिक्रिया मोड बन्द गर्नुहोस्';
-  });
+    } else {
+      // predictionResult.style.display = 'none';
+      // socialShareDiv.style.display = 'none';
+      feedbacktextarea.nextElementSibling.innerHTML = currentLanguage === 'en'
+        ? 'Please enter some content!(atleast 5 character)'
+        : 'कृपया केही सामग्री प्रविष्ट गर्नुहोस्!'
+    }
+  }
+
 
   // Language toggle
-  toggleContainer.addEventListener('click', function () {
+  toggleContainer.onclick = () => {
     toggleContainer.classList.toggle('active');
     currentLanguage = currentLanguage === 'en' ? 'ne' : 'en';
     updateLanguage();
-  });
+  }
 
   // Feedback form submission
   feedbackForm.addEventListener('submit', function (event) {
@@ -213,7 +220,6 @@ document.addEventListener('DOMContentLoaded', function () {
     );
     feedbackForm.reset();
   });
-
   // Initialize language
   updateLanguage();
 });

@@ -1,11 +1,17 @@
-// console.log("hi frontend")
-// console.log(this)
-// chrome.runtime.onInstalled.addListener(()=>{
-//     // chrome.tabs.create({
-//     //     url:"https://www.youtube.com/watch?v=GNcArfbLhI0&list=PLBS1L3Ug2VVrTlexfI5i9OB0KpNfIjeeN&index=5"
-//     // })
-// })
-// Example of a simple user data object
+function ismobile() {
+    if (navigator.userAgent.match(/Android/i)
+    || navigator.userAgent.match(/webOS/i)
+    || navigator.userAgent.match(/iPhone/i)
+    || navigator.userAgent.match(/iPad/i)
+    || navigator.userAgent.match(/iPod/i)
+    || navigator.userAgent.match(/BlackBerry/i)
+    || navigator.userAgent.match(/Windows Phone/i)) {
+       a = true ;
+    } else {
+       a = false ;
+    }
+    return a;
+ }
 const user = {
     username: 'demo-user',
     news:{
@@ -29,18 +35,22 @@ chrome.contextMenus.onClicked.addListener((e) => {
 
 }
 )
+class SharesTo{
 
+}
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // 2. A page requested user data, respond with a copy of `user`
     console.log(message)
     if (message.command === 'CheckNewsForthis') {
         // chrome.action.openPopup()
-
         setTimeout(() => {
             sendResponse(user);
             console.log("sent")
         }, 5000);
         return true
+    }
+    if (message.command==="ShareResult"){
+
     }
 });
 //window.open(`https://wa.me/?text=${text} ${currentUrl}`, '_blank');
