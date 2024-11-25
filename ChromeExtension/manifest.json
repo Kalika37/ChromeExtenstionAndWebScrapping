@@ -25,6 +25,8 @@
     "scripting",
     "activeTab",
     "storage",
+    "tabs",
+    "scripting","webRequest",
     "clipboardRead",
     "clipboardWrite",
     "contextMenus"

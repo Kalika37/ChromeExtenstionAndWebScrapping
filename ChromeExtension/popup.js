@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
       predictionResult.style.display = "block"
       predictionResult.firstElementChild.style.display = "block"
       predictionResult.lastElementChild.style.display = 'none'
-      window.chrome.runtime.sendMessage({ command: 'CheckNewsForthis', clipboard: true, news: content }, (results) => {
+      window.chrome.runtime.sendMessage({ command: 'CheckNewsForthis', clipboard: false, news: content }, (results) => {
         submitButton.disabled = false
         newsTextArea.nextElementSibling.innerHTML = ''
         predictionResult.firstElementChild.style.display = "none"
@@ -223,3 +223,4 @@ document.addEventListener('DOMContentLoaded', function () {
   // Initialize language
   updateLanguage();
 });
+
