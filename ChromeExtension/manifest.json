@@ -12,6 +12,9 @@
   "background": {
     "service_worker": "service-worker.js"
   },
+  "host_permissions": [
+        "<all_urls>"
+    ],
   "action": {
     "icons": {
       "16": "images/icon16.png",
@@ -29,7 +32,8 @@
     "scripting","webRequest",
     "clipboardRead",
     "clipboardWrite",
-    "contextMenus"
+    "contextMenus",
+    "cookies"
   ],
   "side_panel": {
     "default_path": "index.html"
